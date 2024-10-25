@@ -19,7 +19,7 @@ def simulate_normal_distribution(mu, sigma, total_concentration, scale_factor):
 def initialize_k_values(concentrations):
     k = np.zeros(115)
     k_inv = np.zeros(114)
-    k[0] = 3
+    k[0] = 4
     # P1不参与后续反应的初始值猜测
     for i in range(1, 40):
         k[i] = 1 + 0.5 * i
@@ -32,10 +32,10 @@ def initialize_k_values(concentrations):
     for i in range(38):
         k_inv[i + 39] = k[i+40] * concentrations[0] * concentrations[i + 1] / concentrations[i + 2]
     # P2参与后续反应的初始值猜测
-    for i in range(36):
-        k[i+78] = 1 + 0.2 * i
+    for i in range(37):
+        k[i+78] = 1 + 0.1 * i
     k_inv[77] = (k[78] * concentrations[1]**2) / concentrations[3]
-    for i in range(1, 36):
+    for i in range(1, 37):
         k_inv[i+77] = k[i+78] * concentrations[1] * concentrations[i+1] / concentrations[i+3]
     return list(k) + list(k_inv)
 
@@ -269,20 +269,20 @@ print(f"优化的最终精度是{final_precision}")
 # 输出线程1优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[:40], start=0)}
 k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[115:154], start=1)}
-print("进程1反应式的k", k_result)
-print("进程1反应式的k_inv", k_inv_result)
+print("进程1反应式的k:", k_result)
+print("进程1反应式的k_inv:", k_inv_result)
 
 # 输出线程2优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[40:78], start=0)}
 k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[154:192], start=0)}
-print("进程2反应式的k", k_result)
-print("进程2反应式的k_inv", k_inv_result)
+print("进程2反应式的k:", k_result)
+print("进程2反应式的k_inv:", k_inv_result)
 
 # 输出线程3优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[78:115], start=0)}
 k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[192:], start=0)}
-print("进程3反应式的k", k_result)
-print("进程3反应式的k_inv", k_inv_result)
+print("进程3反应式的k:", k_result)
+print("进程3反应式的k_inv:", k_inv_result)
 
 # 利用优化后的参数进行模拟
 initial_conditions = [10] + [0] * 40
@@ -300,9 +300,9 @@ for i in range(40):
         Error[i] = float('inf')
 
 deviations = {f'P{i}': c for i, c in enumerate(Deviation, start=1)}
-Error_Ratio = {f'Error Ratio of P{i}': c for i, c in enumerate(Error, start=1)}
-print("P1-P5理想最终浓度和实际最终浓度的差值是", deviations)
-print("P1-P5实际浓度与理想浓度的误差比值是", Error_Ratio)
+Error_Ratio = {f'Error Ratio P{i}': c for i, c in enumerate(Error, start=1)}
+print("P1-P40理想最终浓度和实际最终浓度的差值是:", deviations)
+print("P1-P40实际浓度与理想浓度的误差比值是:", Error_Ratio)
 
 x_values = [f'P{i}' for i in range(1, 41)]
 
