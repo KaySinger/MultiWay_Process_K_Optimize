@@ -58,7 +58,7 @@ def equations_process4(p, t, k, k_inv):
     dpdt[5] = k_inv[1] * p[9] - k[1] * p[4] * p[5]
     dpdt[6] = k_inv[2] * p[10] - k[2] * p[4] * p[6]
     dpdt[7] = k_inv[3] * p[11] - k[3] * p[4] * p[7]
-    dpdt[8] = k[0] * p[4]**2 + k_inv[4] * p[12] - k_inv[0] * p[8] + k[4] * p[4] * p[8]
+    dpdt[8] = k[0] * p[4]**2 + k_inv[4] * p[12] - k_inv[0] * p[8] - k[4] * p[4] * p[8]
     for i in range(9, 37):
         dpdt[i] = 2 * k[i-8] * p[4] * p[i-4] + k_inv[i-4] * p[i+4] - 2 * k_inv[i-8] * p[i] - k[i-4] * p[4] * p[i]
     dpdt[37] = 2 * k[29] * p[4] * p[33] - 2 * k_inv[29] * p[37]
@@ -79,7 +79,7 @@ def equations_process5(p, t, k, k_inv):
     dpdt[7] = k_inv[2] * p[12] - k[2] * p[5] * p[7]
     dpdt[8] = k_inv[3] * p[13] - k[3] * p[5] * p[8]
     dpdt[9] = k_inv[4] * p[14] - k[4] * p[5] * p[9]
-    dpdt[10] = k[0] * p[5]**2 + k_inv[5] * p[15] - k_inv[0] * p[10] + k[5] * p[5] * p[10]
+    dpdt[10] = k[0] * p[5]**2 + k_inv[5] * p[15] - k_inv[0] * p[10] - k[5] * p[5] * p[10]
     for i in range(11, 36):
         dpdt[i] = 2 * k[i-10] * p[5] * p[i-5] + k_inv[i-5] * p[i+5] - 2 * k_inv[i-10] * p[i] - k[i-5] * p[5] * p[i]
     dpdt[36] = 2 * k[26] * p[5] * p[31] - 2 * k_inv[26] * p[36]
@@ -102,7 +102,7 @@ def equations_process6(p, t, k, k_inv):
     dpdt[9] = k_inv[3] * p[15] - k[3] * p[6] * p[9]
     dpdt[10] = k_inv[4] * p[16] - k[4] * p[6] * p[10]
     dpdt[11] = k_inv[5] * p[17] - k[5] * p[6] * p[11]
-    dpdt[12] = k[0] * p[6]**2 + k_inv[6] * p[18] - k_inv[0] * p[12] + k[6] * p[6] * p[12]
+    dpdt[12] = k[0] * p[6]**2 + k_inv[6] * p[18] - k_inv[0] * p[12] - k[6] * p[6] * p[12]
     for i in range(13, 35):
         dpdt[i] = 2 * k[i-12] * p[6] * p[i-6] + k_inv[i-6] * p[i+6] - 2 * k_inv[i-12] * p[i] - k[i-6] * p[6] * p[i]
     dpdt[35] = 2 * k[23] * p[6] * p[29] - 2 * k_inv[23] * p[35]
