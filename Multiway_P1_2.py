@@ -24,13 +24,13 @@ def initialize_k_values(concentrations):
     k[0] = 3
     # P1不参与后续反应的初始值猜测
     for i in range(1, 40):
-        k[i] = 1 + random.uniform(0.5, 1) * i
+        k[i] = 1.5 + random.uniform(0.7, 1) * i
     k_inv[0] = (k[1] * concentrations[0]**2) / concentrations[1]
     for i in range(1, 39):
         k_inv[i] = (k[i+1] * concentrations[i]**2) / concentrations[i+1]
     # P1参与后续反应的初始值猜测
     for i in range(38):
-        k[i+40] = 1 + random.uniform(0, 0.5) * i
+        k[i+40] = 1 + random.uniform(0.3, 0.5) * i
     for i in range(38):
         k_inv[i+39] = k[i+40] * concentrations[0] * concentrations[i+1] / concentrations[i+2]
     return list(k), list(k_inv)
@@ -47,7 +47,7 @@ def objective(params):
     k = params[:78]
     k_inv = params[78:]
     initial_conditions = [10] + [0] * 40
-    t = np.linspace(0, 200, 1000)
+    t = np.linspace(0, 100, 1000)
     sol = odeint(equations, initial_conditions, t, args=(k, k_inv))
     final_concentrations = sol[-1, :]
     target_concentrations = [0] + list(concentrations)
@@ -253,7 +253,7 @@ print("进程2优化后的k_inv:", k_inv_process2_result)
 
 # 利用优化后的参数进行模拟
 initial_conditions = [10] + [0] * 40
-t = np.linspace(0, 200, 1000)
+t = np.linspace(0, 100, 1000)
 sol = odeint(equations, initial_conditions, t, args=(k_optimized, k_inv_optimized))
 
 Deviation = [0] * 40
@@ -267,7 +267,7 @@ for i in range(40):
         Error[i] = float('inf')
 
 deviations = {f'P{i}': c for i, c in enumerate(Deviation, start=1)}
-Error_Ratio = {f'Error Ratio of P{i}': c for i, c in enumerate(Error, start=1)}
+Error_Ratio = {f'Error Ratio P{i}': c for i, c in enumerate(Error, start=1)}
 print("P1-P40理想最终浓度和实际最终浓度的差值是:", deviations)
 print("P1-P40实际浓度与理想浓度的误差比值是:", Error_Ratio)
 
@@ -279,7 +279,7 @@ pm = [math.log(2**(i)) for i in range(39)]
 fit_lnk_lnp(pm, k_optimized)
 
 # 绘制理想稳态浓度曲线
-plt.figure(figsize=(15, 10))
+plt.figure(figsize=(15, 8))
 plt.xlabel("P-Species")
 plt.ylabel("P-Concentrations")
 plt.title("Ideal Concentrations and Actual Concentrations")

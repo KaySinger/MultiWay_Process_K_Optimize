@@ -22,7 +22,7 @@ def initialize_k_values(concentrations):
     k_inv = np.zeros(39)
     k[0] = 3
     for i in range(1, 40):
-        k[i] = 0.5 + random.uniform(1, 2) * i
+        k[i] = 1.5 + random.uniform(0.5, 1) * i
     k_inv[0] = (k[1] * concentrations[0]**2) / concentrations[1]
     for i in range(1, 39):
         k_inv[i] = k[i+1] * concentrations[0] * concentrations[i] / concentrations[i+1]
@@ -46,7 +46,7 @@ def equations(p, t, k_values):
 # 定义目标函数
 def objective(k):
     initial_conditions = [10] + [0] * 40
-    t = np.linspace(0, 500, 1000)
+    t = np.linspace(0, 200, 1000)
     sol = odeint(equations, initial_conditions, t, args=(k,))
     final_concentrations = sol[-1, :]
     target_concentrations = [0] + list(concentrations)
@@ -235,23 +235,6 @@ result_first = minimize(objective, initial_guess, method='L-BFGS-B', bounds=boun
 k_optimized = result_first.x
 final_precision = result_first.fun
 print("第一次优化的精度", final_precision)
-
-# 如果第一次优化不理想，进行二次优化
-if result_first.fun > 1e-08:
-    # 对优化不理想的k值进行修正操作
-    initial_guess = correct_k_values(k_optimized[:40], k_optimized[40:], concentrations)
-    print("修正后的k值", initial_guess)
-    for i in range(50):
-        if final_precision > 1e-08:
-            print(f"第{i + 1}次优化不理想，进行第{i + 2}次优化。")
-            result = minimize(objective, initial_guess, method='L-BFGS-B', bounds=bounds, callback=callback)
-            k_optimized = result.x
-            final_precision = result.fun
-            print(f"第{i + 2}次优化的最终精度{final_precision}")
-            initial_guess = k_optimized
-        else:
-            break
-
 print("最终优化的精度", final_precision)
 
 # 输出优化结果
@@ -262,7 +245,7 @@ print("优化后的k_inv:", k_inv_result)
 
 # 利用优化后的参数进行模拟
 initial_conditions = [10] + [0] * 40
-t = np.linspace(0, 500, 1000)
+t = np.linspace(0, 200, 1000)
 sol = odeint(equations, initial_conditions, t, args=(k_optimized,))
 
 Deviation = [0] * 40
