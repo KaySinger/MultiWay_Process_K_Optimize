@@ -1,11 +1,13 @@
 import numpy as np
 import math
+import random
 import matplotlib
 matplotlib.use('TkAgg')
 from scipy.optimize import minimize, curve_fit
 from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from Diffusions import Diffusion_Origin
 
 # 正态分布模拟，得到的结果用于物质稳态浓度
 def simulate_normal_distribution(mu, sigma, total_concentration, scale_factor):
@@ -19,81 +21,41 @@ def simulate_normal_distribution(mu, sigma, total_concentration, scale_factor):
 def initialize_k_values(concentrations):
     k = np.zeros(115)
     k_inv = np.zeros(114)
-    k[0] = 4
+    k[0] = 3
     # P1不参与后续反应的初始值猜测
     for i in range(1, 40):
-        k[i] = 1 + 0.5 * i
+        k[i] = 1.5 + random.uniform(0.5, 1) * i
     k_inv[0] = (k[1] * concentrations[0] ** 2) / concentrations[1]
     for i in range(1, 39):
         k_inv[i] = (k[i + 1] * concentrations[i] ** 2) / concentrations[i + 1]
     # P1参与后续反应的初始值猜测
     for i in range(38):
-        k[i + 40] = 1 + 0.3 * i
+        k[i + 40] = 1 + random.uniform(0.3, 0.5) * i
     for i in range(38):
         k_inv[i + 39] = k[i+40] * concentrations[0] * concentrations[i + 1] / concentrations[i + 2]
     # P2参与后续反应的初始值猜测
     for i in range(37):
-        k[i+78] = 1 + 0.1 * i
+        k[i+78] = 0.5 + random.uniform(0.3, 0.5) * i
     k_inv[77] = (k[78] * concentrations[1]**2) / concentrations[3]
     for i in range(1, 37):
         k_inv[i+77] = k[i+78] * concentrations[1] * concentrations[i+1] / concentrations[i+3]
-    return list(k) + list(k_inv)
-
-# 定义微分方程进程1
-def equations_process1(p, t, k_values):
-    k = k_values[:40]
-    k_inv = k_values[115:154]
-    dpdt = [0] * 41
-    dpdt[0] = - k[0] * p[0]
-    dpdt[1] = k[0] * p[0] - k[1] * p[1]**2 + k_inv[0] * p[2]
-    dpdt[2] = k[1] * p[1]**2 + k_inv[1] * p[3] - k_inv[0] * p[2] - k[2] * p[2]**2
-    for i in range(3, 40):
-        dpdt[i] = k[i-1] * p[i-1]**2 + k_inv[i-1] * p[i+1] - k_inv[i-2] * p[i] - k[i] * p[i]**2
-    dpdt[40] = k[39] * p[39]**2 - k_inv[38] * p[40]
-    return dpdt
-
-# 定义微分方程进程2
-def equations_process2(p, t, k_values):
-    k = k_values[40:78]
-    k_inv = k_values[154:192]
-    dpdt = [0] * 41
-    for i in range(1, 39):
-        dpdt[1] += k_inv[i-1] * p[i+2] - k[i-1] * p[1] * p[i+1]
-    dpdt[2] = k_inv[0] * p[3] - k[0] * p[1] * p[2]
-    for i in range(3, 40):
-        dpdt[i] = 2 * k[i-3] * p[1] * p[i-1] + k_inv[i-2] * p[i+1] - 2 * k_inv[i-3] * p[i] - k[i-2] * p[1] * p[i]
-    dpdt[40] = 2 * k[37] * p[1] * p[39] - 2 * k_inv[37] * p[40]
-    return dpdt
-
-# 定义微分方程进程3
-def equations_process3(p, t, k_values):
-    k = k_values[78:115]
-    k_inv = k_values[192:]
-    dpdt = [0] * 41
-    dpdt[2] = k_inv[0] * p[4] - k[0] * p[2]**2
-    for i in range(1, 37):
-        dpdt[2] += k_inv[i] * p[i+4] - k[i] * p[2] * p[i+2]
-    dpdt[3] = k_inv[1] * p[5] - k[1] * p[2] * p[3]
-    dpdt[4] = k[0] * p[2]**2 - k_inv[0] * p[4] + k_inv[2] * p[6] - k[2] * p[2] * p[4]
-    for i in range(5, 39):
-        dpdt[i] = 2 * k[i-4] * p[2] * p[i-2] + k_inv[i-2] * p[i+2] - 2 * k_inv[i-4] * p[i] - k[i-2] * p[2] * p[i]
-    dpdt[39] = 2 * k[35] * p[2] * p[37] - 2 * k_inv[35] * p[39]
-    dpdt[40] = 2 * k[36] * p[2] * p[38] - 2 * k_inv[36] * p[40]
-    return dpdt
+    return list(k), list(k_inv)
 
 # 定义总的微分方程
-def equations(p, t, k_values):
-    dpdt_process1 = equations_process1(p, t, k_values)
-    dpdt_process2 = equations_process2(p, t, k_values)
-    dpdt_process3 = equations_process3(p, t, k_values)
+def equations(p, t, k, k_inv):
+    dpdt_process1 = Diffusion_Origin.equations_process1(p, t, k, k_inv)
+    dpdt_process2 = Diffusion_Origin.equations_process2(p, t, k, k_inv)
+    dpdt_process3 = Diffusion_Origin.equations_process3(p, t, k, k_inv)
     dpdt = [dpdt_process1[i] + dpdt_process2[i] + dpdt_process3[i] for i in range(41)]
     return dpdt
 
 # 定义目标函数
-def objective(k):
+def objective(params):
+    k = params[:115]
+    k_inv = params[115:]
     initial_conditions = [10] + [0] * 40
     t = np.linspace(0, 100, 1000)
-    sol = odeint(equations, initial_conditions, t, args=(k,))
+    sol = odeint(equations, initial_conditions, t, args=(k, k_inv))
     final_concentrations = sol[-1, :]
     target_concentrations = [0] + list(concentrations)
     return np.sum((final_concentrations - target_concentrations) ** 2)
@@ -183,57 +145,74 @@ def animate_concentration_curves(t, sol, num_substances=40, interval=1000, save_
     ani.save(save_path, writer='pillow', fps=1000 // interval)
     plt.show()
 
+# 拟合曲线函数
 def fit_lnk_lnp(pm, k_optimized):
-    # 分别拟合两项公式数据
-    popt1, _ = curve_fit(model, pm[:39], np.log(k_optimized[1:40]), maxfev=1000)
-    popt2, _ = curve_fit(model, pm[:38], np.log(k_optimized[40:78]), maxfev=1000)
-    popt3, _ = curve_fit(model, pm[:37], np.log(k_optimized[78:115]), maxfev=1000)
+    diffs = np.diff(np.log(k_optimized[1:40]))
+
+    # 找到变化率最大的点作为分界点
+    split_index = max(np.argmax(np.abs(diffs)) + 1, 5)
+
+    # 分别拟合前后数据
+    popt1, _ = curve_fit(model, pm[:split_index], np.log(k_optimized[1:split_index + 1]), maxfev=1000)
+    popt2, _ = curve_fit(model, pm[split_index:], np.log(k_optimized[split_index + 1:40]), maxfev=1000)
+    # 整体拟合
+    popt_all, _ = curve_fit(model, pm, np.log(k_optimized[1:40]), maxfev=1000)
 
     # 拟合得到的参数
     a1, x1 = popt1
     a2, x2 = popt2
-    a3, x3 = popt3
-    print(f"原始公式拟合参数: a = {a1}, x = {x1}")
-    print(f"P1参与后续反应公式拟合参数: a = {a2}, x = {x2}")
-    print(f"P2参与到后续反应公式拟合参数：: a = {a3}, x = {x3}")
+    a_all, x_all = popt_all
+    print(f"前半部分拟合参数: a = {a1}, x = {x1}")
+    print(f"后半部分拟合参数: a = {a2}, x = {x2}")
+    print(f"整体拟合参数: a = {a_all}, x = {x_all}")
 
     # 使用拟合参数绘制拟合曲线
-    P_fit1 = np.linspace(min(pm[:39]), max(pm[:39]), 100)
-    P_fit2 = np.linspace(min(pm[:38]), max(pm[:38]), 100)
-    P_fit3 = np.linspace(min(pm[:37]), max(pm[:37]), 100)
+    P_fit1 = np.linspace(min(pm[:split_index]), max(pm[:split_index]), 100)
+    P_fit2 = np.linspace(min(pm[split_index:]), max(pm[split_index:]), 100)
+    P_fit_all = np.linspace(min(pm), max(pm), 100)
     k_fit1 = model(P_fit1, *popt1)
     k_fit2 = model(P_fit2, *popt2)
-    k_fit3 = model(P_fit3, *popt3)
+    k_fit_all = model(P_fit_all, *popt_all)
 
     # 创建子图
-    fig, axs = plt.subplots(3, 1, figsize=(15, 10))
+    fig, axs = plt.subplots(4, 1, figsize=(10, 10))
 
     # 绘制前半部分拟合
-    axs[0].scatter(pm[:39], np.log(k_optimized[1:40]), label='Natural data')
+    axs[0].scatter(pm[:split_index], np.log(k_optimized[1:split_index + 1]), label='Natural data')
     axs[0].plot(P_fit1, k_fit1, color='red', label=f'ln(k) = {a1:.2f} * ln(2^n)^{x1:.2f}')
     axs[0].set_xlabel('polymer')
     axs[0].set_ylabel('ln(k)')
     axs[0].legend()
-    axs[0].set_title('oringinal curve fitting')
+    axs[0].set_title('front curve fitting')
     axs[0].grid(True)
 
-    # 绘制P1参与后续反应拟合
-    axs[1].scatter(pm[:38], np.log(k_optimized[40:78]), label='Natural data')
+    # 绘制后半部分拟合
+    axs[1].scatter(pm[split_index:], np.log(k_optimized[split_index + 1:40]), label='Natural data')
     axs[1].plot(P_fit2, k_fit2, color='blue', label=f'ln(k) = {a2:.2f} * ln(2^n)^{x2:.2f}')
     axs[1].set_xlabel('polymer')
     axs[1].set_ylabel('ln(k)')
     axs[1].legend()
-    axs[1].set_title('P1 curve fitting')
+    axs[1].set_title('behind curve fitting')
     axs[1].grid(True)
 
-    # 绘制P2参与后续反应拟合
-    axs[2].scatter(pm[:37], np.log(k_optimized[78:115]), label='Natural data')
-    axs[2].plot(P_fit3, k_fit3, color='green', label=f'ln(k) = {a3:.2f} * ln(2^n)^{x3:.2f}')
+    # 绘制前后加在一起的拟合
+    axs[2].scatter(pm, np.log(k_optimized[1:40]), label='Natural data')
+    axs[2].plot(P_fit1, k_fit1, color='red', label=f'front: ln(k) = {a1:.2f} * ln(2^n)^{x1:.2f}')
+    axs[2].plot(P_fit2, k_fit2, color='blue', label=f'behind: ln(k) = {a2:.2f} * ln(2^n)^{x2:.2f}')
     axs[2].set_xlabel('polymer')
     axs[2].set_ylabel('ln(k)')
     axs[2].legend()
-    axs[2].set_title('P2 curve fitting')
+    axs[2].set_title('combined curve fitting')
     axs[2].grid(True)
+
+    # 绘制整体拟合
+    axs[3].scatter(pm, np.log(k_optimized[1:40]), label='Natural data')
+    axs[3].plot(P_fit_all, k_fit_all, color='green', label=f'all: ln(k) = {a_all:.2f} * ln(2^n)^{x_all:.2f}')
+    axs[3].set_xlabel('polymer')
+    axs[3].set_ylabel('ln(k)')
+    axs[3].legend()
+    axs[3].set_title('overall curve fitting')
+    axs[3].grid(True)
 
     # 调整子图布局
     plt.tight_layout()
@@ -243,7 +222,6 @@ def fit_lnk_lnp(pm, k_optimized):
 def model(P, a, x):
     return a * P**x
 
-
 # 模拟正态分布
 mu = 20.5
 sigma = 10
@@ -252,7 +230,8 @@ concentrations, x_values = simulate_normal_distribution(mu, sigma, total_concent
 print("理想稳态浓度分布", {f'P{i}': c for i, c in enumerate(concentrations, start=1)})
 
 # 初始K值猜测
-initial_guess = initialize_k_values(concentrations)
+k_initial, k_inv_initial = initialize_k_values(concentrations)
+initial_guess = k_initial + k_inv_initial
 
 # 添加参数约束，确保所有k值都是非负的
 bounds = [(0, None)] * 115 + [(0, None)] * 114  # 确保长度为 13
@@ -262,32 +241,33 @@ objective_values = []
 
 # 第一次优化
 result = minimize(objective, initial_guess, method='L-BFGS-B', bounds=bounds, callback=callback)
-k_optimized = result.x
+k_optimized = result.x[:115]
+k_inv_optimized = result.x[115:]
 final_precision = result.fun
 print(f"优化的最终精度是{final_precision}")
 
 # 输出线程1优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[:40], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[115:154], start=1)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[:39], start=1)}
 print("进程1反应式的k:", k_result)
 print("进程1反应式的k_inv:", k_inv_result)
 
 # 输出线程2优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[40:78], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[154:192], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[39:77], start=0)}
 print("进程2反应式的k:", k_result)
 print("进程2反应式的k_inv:", k_inv_result)
 
 # 输出线程3优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[78:115], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[192:], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[77:114], start=0)}
 print("进程3反应式的k:", k_result)
 print("进程3反应式的k_inv:", k_inv_result)
 
 # 利用优化后的参数进行模拟
 initial_conditions = [10] + [0] * 40
 t = np.linspace(0, 100, 1000)
-sol = odeint(equations, initial_conditions, t, args=(k_optimized,))
+sol = odeint(equations, initial_conditions, t, args=(k_optimized, k_inv_optimized))
 
 Deviation = [0] * 40
 Error = [0] * 40
@@ -337,5 +317,5 @@ plt.grid(True)
 plt.show()
 
 # 调用动画函数
-save_path = r"C:\Users\柴文彬\Desktop\化学动力学\多进程_P2_way2\concentration_animation.gif"
+save_path = r"C:\Users\柴文彬\Desktop\化学动力学\多进程P2\多进程_P2_way2\concentration_animation.gif"
 animate_concentration_curves(t, sol, num_substances=40, save_path=save_path)
