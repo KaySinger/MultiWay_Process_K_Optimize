@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import random
 import matplotlib
 matplotlib.use('TkAgg')
 from scipy.optimize import minimize, curve_fit
@@ -19,26 +20,13 @@ def simulate_normal_distribution(mu, sigma, total_concentration, scale_factor):
 def initialize_k_values(concentrations):
     k = np.zeros(40)
     k_inv = np.zeros(39)
-    k[0] = 2
+    k[0] = 3
     for i in range(1, 40):
-        k[i] = 1 + 0.3 * i
+        k[i] = 0.5 + random.uniform(1, 2) * i
     k_inv[0] = (k[1] * concentrations[0]**2) / concentrations[1]
     for i in range(1, 39):
         k_inv[i] = k[i+1] * concentrations[0] * concentrations[i] / concentrations[i+1]
     return list(k) + list(k_inv)
-
-def correct_k_values(k, k_inv, concentrations):
-    k_adjusted = sorted(k[1:])
-    k_inv_adjusted = k_inv
-
-    k_inv_adjusted[0] = k_adjusted[0] * concentrations[0]**2 / concentrations[1]
-
-    for i in range(1, 39):
-        k_inv_adjusted[i] = k_adjusted[i] * concentrations[0] * concentrations[i] / concentrations[i+1]
-
-    k_adjusted.insert(0, 2)
-
-    return list(k_adjusted) + list(k_inv_adjusted)
 
 # 定义微分方程
 def equations(p, t, k_values):
@@ -72,7 +60,6 @@ def callback(xk):
         change = np.abs(objective_values[-1] - objective_values[-2])
         print(f"迭代次数 {len(objective_values) - 1}: 变化 = {change}")
 
-# 绘图函数
 # 绘图函数
 def plot_concentration_curves(t, sol):
     plt.figure(figsize=(15, 8))
@@ -150,6 +137,7 @@ def animate_concentration_curves(t, sol, num_substances=40, interval=1000, save_
     ani.save(save_path, writer='pillow', fps=1000 // interval)
     plt.show()
 
+# 拟合曲线函数
 def fit_lnk_lnp(pm, k_optimized):
     diffs = np.diff(np.log(k_optimized[1:40]))
 
@@ -325,5 +313,5 @@ plt.grid(True)
 plt.show()
 
 # 调用动画函数
-save_path = r"C:\Users\柴文彬\Desktop\化学动力学\多进程_P1_way1\concentration_animation.gif"
+save_path = r"C:\Users\柴文彬\Desktop\化学动力学\多进程P1\多进程_P1_way1\concentration_animation.gif"
 animate_concentration_curves(t, sol, num_substances=40, save_path=save_path)
