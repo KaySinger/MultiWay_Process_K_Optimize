@@ -1,7 +1,5 @@
 import numpy as np
 import math
-import matplotlib
-matplotlib.use('TkAgg')
 from scipy.optimize import curve_fit
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -153,6 +151,35 @@ def fit_lnk_lnp(pm, k_optimized):
     axs[3].grid(True)
 
     # 调整子图布局
+    plt.tight_layout()
+    plt.show()
+
+# 理想和实际稳态浓度分布曲线
+def plot_concentrations(x_values, concentrations, final_concentrations):
+    plt.figure(figsize=(15, 8))
+    plt.xlabel("P-Species")
+    plt.ylabel("P-Concentrations")
+    plt.title("Ideal Concentrations and Actual Concentrations")
+    plt.xticks(range(len(x_values)), x_values, rotation=90)
+    plt.plot(range(len(x_values)), concentrations, label='Ideal Concentrations', marker='o', linestyle='-', color='blue')
+    plt.plot(range(len(x_values)), final_concentrations, label='Actual Concentrations', marker='o', linestyle='-', color='red')
+
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
+
+# 误差比值图
+def plot_error_ratio(x_values, Error):
+    plt.figure(figsize=(10, 6))
+    plt.xlabel("P-Species")
+    plt.ylabel("P-Error-Ratio")
+    plt.title("Error Ratio of Concentrations between Ideal and Actual")
+    plt.xticks(range(len(x_values)), x_values, rotation=90)
+
+    plt.plot(range(len(x_values)), Error, label='Error-Ratio', marker='o', linestyle='-', color='blue')
+
+    plt.grid(True)
     plt.tight_layout()
     plt.show()
 
