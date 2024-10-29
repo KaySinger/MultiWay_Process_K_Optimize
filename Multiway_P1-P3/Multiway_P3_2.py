@@ -310,7 +310,7 @@ plt.xlabel("P-Species")
 plt.ylabel("P-Concentrations")
 plt.title("Ideal Concentrations and Actual Concentrations")
 plt.xticks(range(len(x_values)), x_values, rotation=90)
-final_concentrations = sol[-1, 1:]
+final_concentrations: tuple = sol[-1, 1:]
 plt.plot(range(len(x_values)), concentrations, label = 'Ideal Concentrations', marker='o', linestyle='-', color='blue')
 plt.plot(range(len(x_values)), final_concentrations, label = 'Actual Concentrations', marker='o', linestyle='-', color='red')
 plt.grid(True)
