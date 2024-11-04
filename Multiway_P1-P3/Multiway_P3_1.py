@@ -36,7 +36,7 @@ def initialize_k_values(concentrations):
         k_inv[i+40] = k[i+41] * concentrations[1] * concentrations[i+2] / concentrations[i+4]
     # P3参与后续反应的初始值猜测
     for i in range(35):
-        k[i+77] = 0.5 + random.uniform(0.3, 0.5) * i
+        k[i+77] = 1 + random.uniform(0.3, 0.5) * i
     k_inv[76] = (k[77] * concentrations[2]**2) / concentrations[5]
     for i in range(34):
         k_inv[i+77] = k[i+78] * concentrations[2] * concentrations[i+3] / concentrations[i+6]
@@ -154,8 +154,8 @@ def fit_lnk_lnp(pm, k_optimized):
     split_index = max(np.argmax(np.abs(diffs)) + 1, 5)
 
     # 分别拟合前后数据
-    popt1, _ = curve_fit(model, pm[:split_index], np.log(k_optimized[1:split_index + 1]), maxfev=1000)
-    popt2, _ = curve_fit(model, pm[split_index:], np.log(k_optimized[split_index + 1:40]), maxfev=1000)
+    popt1, _ = curve_fit(model, pm[0:split_index], np.log(k_optimized[1:split_index + 1]), maxfev=1000)
+    popt2, _ = curve_fit(model, pm[split_index:39], np.log(k_optimized[split_index + 1:40]), maxfev=1000)
     # 整体拟合
     popt_all, _ = curve_fit(model, pm, np.log(k_optimized[1:40]), maxfev=1000)
 
@@ -249,19 +249,19 @@ print(f"优化的最终精度是{final_precision}")
 
 # 输出线程1优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[:40], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[:39], start=1)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[:39], start=1)}
 print("进程1反应式的k:", k_result)
 print("进程1反应式的k_inv:", k_inv_result)
 
 # 输出线程2优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[40:77], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[39:76], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[39:76], start=0)}
 print("进程2反应式的k:", k_result)
 print("进程2反应式的k_inv:", k_inv_result)
 
 # 输出线程3优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[77:112], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[76:111], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[76:111], start=0)}
 print("进程3反应式的k:", k_result)
 print("进程3反应式的k_inv:", k_inv_result)
 

@@ -17,8 +17,8 @@ def simulate_normal_distribution(mu, sigma, total_concentration, scale_factor):
 
 # 初始化 k 和 k_inv 数组
 def initialize_k_values(concentrations):
-    k = np.zeros(232)
-    k_inv = np.zeros(231)
+    k = np.zeros(280)
+    k_inv = np.zeros(279)
     # P1参与后续反应的初始值猜测
     k[0] = 3
     for i in range(1, 40):
@@ -62,6 +62,18 @@ def initialize_k_values(concentrations):
     k_inv[204] = (k[205] * concentrations[6] ** 2) / concentrations[13]
     for i in range(26):
         k_inv[i + 205] = k[i + 206] * concentrations[6] * concentrations[i + 7] / concentrations[i + 14]
+    # P8参与后续反应的初始值猜测
+    for i in range(25):
+        k[i + 232] = 1 + random.uniform(0.3, 0.5) * i
+    k_inv[231] = (k[232] * concentrations[7] ** 2) / concentrations[15]
+    for i in range(24):
+        k_inv[i + 232] = k[i + 233] * concentrations[7] * concentrations[i + 8] / concentrations[i + 16]
+    # P9参与后续反应的初始值猜测
+    for i in range(23):
+        k[i + 257] = 1 + random.uniform(0.3, 0.5) * i
+    k_inv[256] = (k[257] * concentrations[8] ** 2) / concentrations[17]
+    for i in range(22):
+        k_inv[i + 257] = k[i + 258] * concentrations[8] * concentrations[i + 9] / concentrations[i + 18]
     return list(k), list(k_inv)
 
 # 定义总的微分方程
@@ -73,15 +85,18 @@ def equations(p, t, k, k_inv):
     dpdt_process5 = Diffusion_Special_P1.equations_process5(p, t, k, k_inv)
     dpdt_process6 = Diffusion_Special_P1.equations_process6(p, t, k, k_inv)
     dpdt_process7 = Diffusion_Special_P1.equations_process7(p, t, k, k_inv)
-    dpdt = [dpdt_process1[i] + dpdt_process2[i] + dpdt_process3[i] + dpdt_process4[i] + dpdt_process5[i] + dpdt_process6[i] + dpdt_process7[i] for i in range(41)]
+    dpdt_process8 = Diffusion_Special_P1.equations_process8(p, t, k, k_inv)
+    dpdt_process9 = Diffusion_Special_P1.equations_process9(p, t, k, k_inv)
+    dpdt = [dpdt_process1[i] + dpdt_process2[i] + dpdt_process3[i] + dpdt_process4[i] + dpdt_process5[i] + dpdt_process6[i] + dpdt_process7[i] + dpdt_process8[i]
+            + dpdt_process9[i] for i in range(41)]
     return dpdt
 
 # 定义目标函数
 def objective(params):
-    k = params[:232]
-    k_inv = params[232:]
+    k = params[:280]
+    k_inv = params[280:]
     initial_conditions = [10] + [0] * 40
-    t = np.linspace(0, 50, 1000)
+    t = np.linspace(0, 10, 1000)
     sol = odeint(equations, initial_conditions, t, args=(k, k_inv))
     final_concentrations = sol[-1, :]
     target_concentrations = [0] + list(concentrations)
@@ -114,8 +129,8 @@ objective_values = []
 
 # 第一次优化
 result = minimize(objective, initial_guess, method='L-BFGS-B', bounds=bounds, callback=callback)
-k_optimized = result.x[:232]
-k_inv_optimized = result.x[232:]
+k_optimized = result.x[:280]
+k_inv_optimized = result.x[280:]
 final_precision = result.fun
 print(f"优化的最终精度是{final_precision}")
 
@@ -157,13 +172,25 @@ print("进程6反应式的k_inv:", k_inv_result)
 
 # 输出线程7优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[205:232], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[204:], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[204:231], start=0)}
 print("进程7反应式的k:", k_result)
 print("进程7反应式的k_inv:", k_inv_result)
 
+# 输出线程8优化结果
+k_result = {f"k{i}": c for i, c in enumerate(k_optimized[232:257], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[231:256], start=0)}
+print("进程8反应式的k:", k_result)
+print("进程8反应式的k_inv:", k_inv_result)
+
+# 输出线程9优化结果
+k_result = {f"k{i}": c for i, c in enumerate(k_optimized[257:280], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[256:279], start=0)}
+print("进程9反应式的k:", k_result)
+print("进程9反应式的k_inv:", k_inv_result)
+
 # 利用优化后的参数进行模拟
 initial_conditions = [10] + [0] * 40
-t = np.linspace(0, 50, 1000)
+t = np.linspace(0, 10, 1000)
 sol = odeint(equations, initial_conditions, t, args=(k_optimized, k_inv_optimized))
 
 Deviation = [0] * 40
@@ -198,5 +225,5 @@ Picture.plot_concentration_curves(t, sol)
 Picture.plot_error_ratio(x_values, Error)
 
 # 调用动画函数
-save_path = r"C:\Users\柴文彬\Desktop\化学动力学\多进程P7\多进程_P7_way1\concentration_animation.gif"
+save_path = r"C:\Users\柴文彬\Desktop\化学动力学\多进程P9\多进程_P9_way1\concentration_animation.gif"
 Picture.animate_concentration_curves(t, sol, num_substances=40, save_path=save_path)

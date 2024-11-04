@@ -28,31 +28,31 @@ def initialize_k_values(concentrations):
         k_inv[i] = k[i + 1] * concentrations[0] * concentrations[i] / concentrations[i + 1]
     # P2参与后续反应的初始值猜测
     for i in range(37):
-        k[i+40] = 1 + random.uniform(0.3, 0.5) * i
+        k[i+40] = 1.2 + random.uniform(0.3, 0.5) * i
     k_inv[39] = (k[40] * concentrations[1]**2) / concentrations[3]
     for i in range(36):
         k_inv[i+40] = k[i+41] * concentrations[1] * concentrations[i+2] / concentrations[i+4]
     # P3参与后续反应的初始值猜测
     for i in range(35):
-        k[i+77] = 0.7 + random.uniform(0.3, 0.5) * i
+        k[i+77] = 1 + random.uniform(0.3, 0.5) * i
     k_inv[76] = (k[77] * concentrations[2]**2) / concentrations[5]
     for i in range(34):
         k_inv[i+77] = k[i+78] * concentrations[2] * concentrations[i+3] / concentrations[i+6]
     # P4参与后续反应的初始值猜测
     for i in range(33):
-        k[i+112] = 0.5 + random.uniform(0.3, 0.5) * i
+        k[i+112] = 1 + random.uniform(0.3, 0.5) * i
     k_inv[111] = (k[112] * concentrations[3]**2) / concentrations[7]
     for i in range(32):
         k_inv[i+112] = k[i+113] * concentrations[3] * concentrations[i+4] / concentrations[i+8]
     # P5参与后续反应的初始值猜测
     for i in range(31):
-        k[i + 145] = 0.5 + random.uniform(0.3, 0.5) * i
+        k[i + 145] = 1 + random.uniform(0.3, 0.5) * i
     k_inv[144] = (k[145] * concentrations[4] ** 2) / concentrations[9]
     for i in range(30):
         k_inv[i + 145] = k[i + 146] * concentrations[4] * concentrations[i + 5] / concentrations[i + 10]
     # P6参与后续反应的初始值猜测
     for i in range(29):
-        k[i + 176] = 0.5 + random.uniform(0.3, 0.5) * i
+        k[i + 176] = 1 + random.uniform(0.3, 0.5) * i
     k_inv[175] = (k[176] * concentrations[5] ** 2) / concentrations[11]
     for i in range(28):
         k_inv[i + 176] = k[i + 177] * concentrations[5] * concentrations[i + 6] / concentrations[i + 12]
@@ -114,37 +114,37 @@ print(f"优化的最终精度是{final_precision}")
 
 # 输出线程1优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[:40], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[:39], start=1)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[:39], start=1)}
 print("进程1反应式的k:", k_result)
 print("进程1反应式的k_inv:", k_inv_result)
 
 # 输出线程2优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[40:77], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[39:76], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[39:76], start=0)}
 print("进程2反应式的k:", k_result)
 print("进程2反应式的k_inv:", k_inv_result)
 
 # 输出线程3优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[77:112], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[76:111], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[76:111], start=0)}
 print("进程3反应式的k:", k_result)
 print("进程3反应式的k_inv:", k_inv_result)
 
 # 输出线程4优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[112:145], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[111:144], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[111:144], start=0)}
 print("进程4反应式的k:", k_result)
 print("进程4反应式的k_inv:", k_inv_result)
 
 # 输出线程5优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[145:176], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[144:175], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[144:175], start=0)}
 print("进程5反应式的k:", k_result)
 print("进程5反应式的k_inv:", k_inv_result)
 
 # 输出线程6优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[176:205], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[175:], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[175:], start=0)}
 print("进程6反应式的k:", k_result)
 print("进程6反应式的k_inv:", k_inv_result)
 

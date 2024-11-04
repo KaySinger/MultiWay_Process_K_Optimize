@@ -247,7 +247,7 @@ print("进程1优化后的k_inv:", k_inv_process1_result)
 
 # 输出进程2优化结果
 k_process2_result = {f"k{i}": c for i, c in enumerate(k_optimized[40:], start=0)}
-k_inv_process2_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[39:], start=0)}
+k_inv_process2_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[39:], start=0)}
 print("进程2优化后的k:", k_process2_result)
 print("进程2优化后的k_inv:", k_inv_process2_result)
 

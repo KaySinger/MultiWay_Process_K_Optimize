@@ -248,19 +248,19 @@ print(f"优化的最终精度是{final_precision}")
 
 # 输出线程1优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[:40], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[:39], start=1)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[:39], start=1)}
 print("进程1反应式的k:", k_result)
 print("进程1反应式的k_inv:", k_inv_result)
 
 # 输出线程2优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[40:78], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[39:77], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[39:77], start=0)}
 print("进程2反应式的k:", k_result)
 print("进程2反应式的k_inv:", k_inv_result)
 
 # 输出线程3优化结果
 k_result = {f"k{i}": c for i, c in enumerate(k_optimized[78:115], start=0)}
-k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_optimized[77:114], start=0)}
+k_inv_result = {f"k{i}_inv": c for i, c in enumerate(k_inv_optimized[77:114], start=0)}
 print("进程3反应式的k:", k_result)
 print("进程3反应式的k_inv:", k_inv_result)
 
